@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignUp</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="wrapper">
+        <h1>Sign Up</h1>
+        <h4>It's free and only takes a minute</h4>
+        <form action="https://sheetdb.io/api/v1/lwm22rkttd1hq" method="post" id="sheetdb-form">
+            <div class="input-box">
+                <input type="text" name="data[Username]" placeholder="Username" id="username" required>
+            </div>
+            <div class="input-box">
+                <input type="text" name="data[First name]" placeholder="First Name" required>
+            </div>
+            <div class="input-box">
+                <input type="text" name="data[Last name]" placeholder="Last Name" required>
+            </div>
+            <div class="input-box">
+                <input type="email" name="data[Email]" placeholder="Email" required>
+            </div>
+            <div class="input-box">
+                <input type="password" name="data[Password]" placeholder="Password" required>
+            </div>
+            <div class="input-box">
+                <input type="password" name="data[Confirm Password]" placeholder="Confirm Password" required>
+            </div>
+            <button type="submit" class="btn">SignUp</button>
+        </form>
+        <div class="register-link">
+            <p>By clicking the Sign Up button, you agree to our <br>
+                <a href="#">Terms and Condition</a> and <a href="#">Policy Privacy</a>
+            </p>
+        </div>
+        <div class="register-link">
+            <p>Already have an account? <a href="index.html">Login here</a></p>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var form = document.getElementById('sheetdb-form');
+                form.addEventListener("submit", e => {
+                    e.preventDefault();
+        
+                    // Grab the entered username, password, and confirm password
+                    const username = document.getElementById('username').value;
+                    const password = document.querySelector('input[name="data[Password]"]').value;
+                    const confirmPassword = document.querySelector('input[name="data[Confirm Password]"]').value;
+        
+                    // Check if password and confirm password match
+                    if (password !== confirmPassword) {
+                        alert("Passwords do not match. Please make sure both passwords are the same.");
+                        return; // Stop the form from submitting
+                    }
+        
+                    // Fetch existing data from Google Sheets
+                    fetch("https://sheetdb.io/api/v1/lwm22rkttd1hq")
+                        .then(response => {
+                            if (!response.ok) {
+                                console.error("Error fetching data:", response.status);
+                                throw new Error("Failed to fetch data from Google Sheets");
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log("Data fetched from SheetDB:", data); // Log fetched data
+        
+                            // Check if the username already exists
+                            const usernameExists = data.some(item => item.Username === username);
+        
+                            if (usernameExists) {
+                                // If username exists, show an error message
+                                alert("This username is already taken. Please choose another.");
+                            } else {
+                                // If username is unique and passwords match, submit the form
+                                fetch(form.action, {
+                                    method: "POST",
+                                    body: new FormData(form),
+                                }).then(response => response.json())
+                                  .then((html) => {
+                                    // Log success
+                                    console.log("User successfully added:", html);
+                                    window.open('d.html', '_blank');
+                                  }).catch(error => {
+                                      console.error("Error submitting form:", error);
+                                      alert("There was an issue submitting your data.");
+                                  });
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error fetching data:", error);
+                            alert("There was an issue with the request.");
+                        });
+                });
+            });
+        </script>
+        
+
+</body>
+
+</html>

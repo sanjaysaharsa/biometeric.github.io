@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>atendance record</title>
+    <link rel="stylesheet" href="style.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+</head>
+
+<body>
+
+    <div class="wrapper">
+        <form action="https://sheetdb.io/api/v1/lwm22rkttd1hq" ,method="get" id="sheetdb-form">
+            <h1>Login</h1>
+
+
+            <div class="input-box">
+                <input type="text" name="data[Username]" placeholder="Username" required>
+                <i class='bx bxs-user'></i>
+            </div>
+
+
+            <div class="input-box">
+                <input type="password" name="data[Password]" placeholder="password" required>
+                <i class='bx bxs-lock-alt'></i>
+            </div>
+
+
+            <!-- Inside index.html (Login page) -->
+            <div class="remember-forget">
+                <label> <input type="checkbox" name="checkbox"> Remember me</label>
+                <a href="forgot-password.html">Forgot password?</a>
+            </div>
+
+
+            <button type="submit" class="btn" value="submit">Login</button>
+            <div class="register-link">
+                <p>Don't have an account? <a href="signup.html">Register</a></p>
+            </div>
+        </form>
+    </div>
+    <script>
+        var form = document.getElementById('sheetdb-form');
+        form.addEventListener("submit", e => {
+            e.preventDefault();
+            // Grab user input
+            const username = form.querySelector('input[name="data[Username]"]').value;
+            const password = form.querySelector('input[name="data[Password]"]').value;
+
+            // Fetch data from Google Sheets
+            fetch("https://sheetdb.io/api/v1/lwm22rkttd1hq")
+                .then(response => response.json())
+                .then(data => {
+                    // Check if there's any matching record
+                    const user = data.find(item => item.Username === username && item.Password === password);
+                    if (user) {
+                        // If credentials match, proceed (you can change this to whatever you'd like)
+                        window.open('a.html', '_blank');
+                    } else {
+                        alert("Invalid username or password.");
+                    }
+                })
+                .catch(error => console.error("Error fetching data:", error));
+        });
+
+
+    </script>
+    
+</body>
+
+</html>

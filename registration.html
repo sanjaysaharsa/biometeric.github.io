@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registration - Fingerprint</title>
+    <link rel="stylesheet" href="registration.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Student Registration</h1>
+        
+        <div class="form-section">
+            <h2>Register with Fingerprint</h2>
+            <form id="registerForm">
+                <input type="text" id="name" placeholder="Student Name" required>
+                <input type="text" id="rollNumber" placeholder="Roll Number" required>
+                <input type="text" id="bloodGroup" placeholder="Blood Group" required>
+                <input type="text" id="class" placeholder="Class" required>
+                <input type="text" id="academicYear" placeholder="Academic Year" required>
+                <button type="button" onclick="registerStudent()">Register Fingerprint</button>
+                <div id="registerStatus" class="loading" style="display: none;">Scanning Fingerprint...</div>
+                <div id="fingerprintIcon" class="loading" style="display: none;">🔍</div>
+            </form>
+        </div>
+    </div>
+
+    <script src="registration.js"></script>
+</body>
+</html>
