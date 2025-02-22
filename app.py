@@ -18,13 +18,12 @@ CORS(app)
 # ✅ Load Environment Variables (Render-compatible)
 SHEETDB_REGISTRATION_URL = os.getenv("SHEETDB_REGISTRATION_URL", "https://sheetdb.io/api/v1/lvg1wuw9n1k20")
 SHEETDB_ATTENDANCE_URL = os.getenv("SHEETDB_ATTENDANCE_URL", "https://sheetdb.io/api/v1/lm3f46uz6mp8m")
-DATABASE_PATH = os.getenv("DATABASE_PATH", "/tmp/fingerprints.db")  # ✅ Persistent storage for Render
+DATABASE_PATH = os.getenv("DATABASE_PATH", "/var/data/fingerprints.db")  # ✅ Persistent storage for Render
 PORT = int(os.getenv("PORT", 10000))  # ✅ Set to 10000 for Render
 
 # ✅ Initialize SQLite Database
 def init_db():
-    if not os.path.exists(os.path.dirname(DATABASE_PATH)):
-      os.makedirs(os.path.dirname(DATABASE_PATH), exist_ok=True)  # ✅ Ensure directory exists
+    os.makedirs(os.path.dirname(DATABASE_PATH), exist_ok=True)  # ✅ Ensure directory exists
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     cursor.execute('''
@@ -134,6 +133,11 @@ def attendance():
     print("✅ SheetDB Attendance Response:", response.json())
 
     return jsonify({"message": "Attendance recorded"})
+
+# ✅ Add Default Route for Render
+@app.route('/')
+def home():
+    return "Welcome to the Biometric Attendance System API! Use /register or /attendance"
 
 # ✅ Start the Waitress Server for Deployment
 if __name__ == '__main__':
