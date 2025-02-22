@@ -3,20 +3,28 @@ import sqlite3
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import requests
-from pyfingerprint.pyfingerprint import PyFingerprint
+from waitress import serve  # Production server
+
+# Try to import fingerprint module (Only works locally)
+try:
+    from pyfingerprint.pyfingerprint import PyFingerprint
+    SENSOR_AVAILABLE = True
+except ImportError:
+    SENSOR_AVAILABLE = False  # Render won't have a fingerprint sensor
 
 app = Flask(__name__)
 CORS(app)
 
-# Load Environment Variables (Render-compatible)
+# ✅ Load Environment Variables (Render-compatible)
 SHEETDB_REGISTRATION_URL = os.getenv("SHEETDB_REGISTRATION_URL", "https://sheetdb.io/api/v1/lvg1wuw9n1k20")
 SHEETDB_ATTENDANCE_URL = os.getenv("SHEETDB_ATTENDANCE_URL", "https://sheetdb.io/api/v1/lm3f46uz6mp8m")
-DATABASE_URL = os.getenv("DATABASE_URL", "fingerprints.db")
-PORT = int(os.getenv("PORT", 5000))  # Defaulting to 5000
+DATABASE_PATH = os.getenv("DATABASE_PATH", "/data/fingerprints.db")  # ✅ Persistent storage for Render
+PORT = int(os.getenv("PORT", 10000))  # ✅ Set to 10000 for Render
 
-# Initialize SQLite Database
+# ✅ Initialize SQLite Database
 def init_db():
-    conn = sqlite3.connect(DATABASE_URL)
+    os.makedirs(os.path.dirname(DATABASE_PATH), exist_ok=True)  # ✅ Ensure directory exists
+    conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS students (
@@ -32,13 +40,16 @@ def init_db():
     conn.commit()
     conn.close()
 
-init_db()
+init_db()  # Run database setup
 
-# Capture Fingerprint Function
+# ✅ Capture Fingerprint Function (Handles missing sensor)
 def capture_fingerprint():
+    if not SENSOR_AVAILABLE:
+        print("⚠️ Fingerprint sensor not available. Returning mock fingerprint.")
+        return "MOCK_FINGERPRINT_" + str(os.getpid())  # Mock fingerprint for testing
+
     try:
         fingerprint_sensor = PyFingerprint('/dev/ttyUSB0', 57600, 0xFFFFFFFF, 0x00000000)
-        
         if not fingerprint_sensor.verifyPassword():
             raise ValueError("Fingerprint sensor password is incorrect!")
 
@@ -58,10 +69,10 @@ def capture_fingerprint():
         return fingerprintID
 
     except Exception as e:
-        print("Fingerprint error:", str(e))
+        print("⚠️ Fingerprint error:", str(e))
         return None
 
-# Register Student
+# ✅ Register Student API
 @app.route('/register', methods=['POST'])
 def register():
     data = request.json
@@ -76,7 +87,7 @@ def register():
         return jsonify({"error": "Fingerprint scan failed"}), 400
 
     try:
-        conn = sqlite3.connect(DATABASE_URL)
+        conn = sqlite3.connect(DATABASE_PATH)
         cursor = conn.cursor()
         
         cursor.execute("INSERT INTO students (rollNumber, name, class, bloodGroup, academicYear, fingerprint) VALUES (?, ?, ?, ?, ?, ?)", 
@@ -84,21 +95,22 @@ def register():
         conn.commit()
         conn.close()
 
-        # Store in Google Sheets
+        # ✅ Store student data in Google Sheets (SheetDB)
         data["fingerprint"] = fingerprint
-        requests.post(SHEETDB_REGISTRATION_URL, json={"data": data})
+        response = requests.post(SHEETDB_REGISTRATION_URL, json={"data": data})
+        print("✅ SheetDB Registration Response:", response.json())
 
         return jsonify({"message": "Registration successful"})
 
     except sqlite3.IntegrityError:
         return jsonify({"error": "Student already registered or duplicate fingerprint"}), 400
 
-# Mark Attendance
+# ✅ Mark Attendance API
 @app.route('/attendance', methods=['POST'])
 def attendance():
     fingerprint = capture_fingerprint()
 
-    conn = sqlite3.connect(DATABASE_URL)
+    conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT rollNumber, name, class FROM students WHERE fingerprint=?", (fingerprint,))
     student = cursor.fetchone()
@@ -116,8 +128,13 @@ def attendance():
         "date": request.json.get("date")
     }
 
-    requests.post(SHEETDB_ATTENDANCE_URL, json={"data": attendance_data})
+    # ✅ Send Attendance Data to Google Sheets (SheetDB)
+    response = requests.post(SHEETDB_ATTENDANCE_URL, json={"data": attendance_data})
+    print("✅ SheetDB Attendance Response:", response.json())
+
     return jsonify({"message": "Attendance recorded"})
 
+# ✅ Start the Waitress Server for Deployment
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=PORT)
+    print(f"🚀 Starting server on port {PORT}...")
+    serve(app, host="0.0.0.0", port=PORT)
