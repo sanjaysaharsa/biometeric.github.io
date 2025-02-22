@@ -1,6 +1,3 @@
-_registration.css 
-
-/* General styles */
 body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f9;
@@ -23,10 +20,6 @@ body {
 
 h1 {
     color: #333;
-}
-
-.form-section {
-    margin: 20px 0;
 }
 
 input {
@@ -52,11 +45,4 @@ button {
 
 button:hover {
     background-color: #218838;
-}
-
-/* Fingerprint icon and loading state */
-.loading {
-    font-size: 20px;
-    color: #007bff;
-    margin-top: 10px;
 }

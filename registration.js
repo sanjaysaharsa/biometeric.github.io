@@ -1,30 +1,13 @@
-const serverURL = "http://127.0.0.1:5000"; // Flask server URL
+const serverURL = "https://your-deployed-url.onrender.com";
 
-// WebAuthn Fingerprint Capture
+// Simulated Fingerprint Capture (Replace this with actual fingerprint hardware integration)
 async function captureFingerprint() {
-    try {
-        // Requesting the device to scan the fingerprint using WebAuthn
-        const credential = await navigator.credentials.create({
-            publicKey: {
-                challenge: new Uint8Array(32), // Random challenge
-                rp: { name: "Fingerprint Attendance System" },
-                user: { 
-                    id: new Uint8Array(16), 
-                    name: document.getElementById("rollNumber").value, 
-                    displayName: document.getElementById("name").value 
-                },
-                pubKeyCredParams: [{ type: "public-key", alg: -7 }],
-                authenticatorSelection: { authenticatorAttachment: "platform" },
-                timeout: 60000 // Timeout of 1 minute for the fingerprint scan
-            }
-        });
-
-        return credential.id; // Return fingerprint data (credential ID)
-    } catch (error) {
-        console.error("Fingerprint scan failed:", error);
-        alert("Fingerprint scan failed.");
-        return null;
-    }
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            const fingerprintData = "fingerprint_" + Math.floor(Math.random() * 100000);
+            resolve(fingerprintData);
+        }, 2000); // Simulated 2s fingerprint scan
+    });
 }
 
 // Register Student with Fingerprint
@@ -37,7 +20,6 @@ async function registerStudent() {
 
     document.getElementById("registerStatus").style.display = "block";
 
-    // Real fingerprint capture using WebAuthn
     let fingerprint = await captureFingerprint();
     if (!fingerprint) {
         alert("Fingerprint scan failed.");
@@ -55,7 +37,7 @@ async function registerStudent() {
     };
 
     try {
-        let response = await fetch("http://127.0.0.1:5000/register", {
+        let response = await fetch(`${serverURL}/register`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(studentData)

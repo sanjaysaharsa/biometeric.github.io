@@ -1,4 +1,4 @@
-const serverURL = "http://127.0.0.1:5000"; // Flask server URL
+const serverURL = "http://127.0.0.1:8000"; // Use correct Flask API URL
 
 // Simulated Fingerprint Capture
 async function captureFingerprint() {
@@ -6,7 +6,7 @@ async function captureFingerprint() {
         setTimeout(() => {
             const fingerprintData = "fingerprint_" + Math.floor(Math.random() * 100000);
             resolve(fingerprintData);
-        }, 2000); // Simulated 2s fingerprint scan
+        }, 2000);
     });
 }
 
