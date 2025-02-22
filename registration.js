@@ -1,4 +1,4 @@
-const serverURL = "https://your-deployed-url.onrender.com";
+const serverURL = "https://biometric-attendance-1uz9.onrender.com";
 
 // Simulated Fingerprint Capture (Replace this with actual fingerprint hardware integration)
 async function captureFingerprint() {
