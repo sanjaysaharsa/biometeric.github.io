@@ -12,6 +12,7 @@ try:
 except ImportError:
     SENSOR_AVAILABLE = False  # Render won't have a fingerprint sensor
 
+# Create the Flask app
 app = Flask(__name__)
 CORS(app)
 
