@@ -1,10 +1,10 @@
-const serverURL = "http://127.0.0.1:8000"; // Use correct Flask API URL
+const serverURL = "https://biometric-attendance-1uz9.onrender.com";
 
 // Simulated Fingerprint Capture
 async function captureFingerprint() {
     return new Promise((resolve) => {
         setTimeout(() => {
-            const fingerprintData = "fingerprint_" + Math.floor(Math.random() * 100000);
+            const fingerprintData = "MOCK_FINGERPRINT_123"; // Use a consistent mock fingerprint
             resolve(fingerprintData);
         }, 2000);
     });
