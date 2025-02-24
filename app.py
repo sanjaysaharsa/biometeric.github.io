@@ -1,6 +1,6 @@
 import os
 import sqlite3
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import requests
 from waitress import serve  # Production server
@@ -46,7 +46,8 @@ init_db()  # Run database setup
 def capture_fingerprint():
     if not SENSOR_AVAILABLE:
         print("⚠️ Fingerprint sensor not available. Returning mock fingerprint.")
-        return "MOCK_FINGERPRINT_" + str(os.getpid())  # Mock fingerprint for testing
+        # Return a mock fingerprint for testing
+        return "MOCK_FINGERPRINT_123"
 
     try:
         fingerprint_sensor = PyFingerprint('/dev/ttyUSB0', 57600, 0xFFFFFFFF, 0x00000000)
@@ -71,6 +72,16 @@ def capture_fingerprint():
     except Exception as e:
         print("⚠️ Fingerprint error:", str(e))
         return None
+
+# ✅ Serve index.html as the root route
+@app.route('/')
+def home():
+    return send_from_directory('.', 'index.html')
+
+# ✅ Serve static files (CSS, JS, etc.)
+@app.route('/<path:filename>')
+def static_files(filename):
+    return send_from_directory('.', filename)
 
 # ✅ Register Student API
 @app.route('/register', methods=['POST'])
@@ -110,6 +121,9 @@ def register():
 def attendance():
     fingerprint = capture_fingerprint()
 
+    if fingerprint is None:
+        return jsonify({"error": "Fingerprint scan failed"}), 400
+
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT rollNumber, name, class FROM students WHERE fingerprint=?", (fingerprint,))
@@ -133,11 +147,6 @@ def attendance():
     print("✅ SheetDB Attendance Response:", response.json())
 
     return jsonify({"message": "Attendance recorded"})
-
-# ✅ Root Route (To check if API is running)
-@app.route('/')
-def home():
-    return jsonify({"message": "Biometric Attendance System API is running!"})
 
 # ✅ Start the Waitress Server for Deployment
 if __name__ == '__main__':
